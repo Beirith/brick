@@ -5,15 +5,27 @@ import {PropertyToken} from "./PropertyToken.sol";
 
 /// @notice Permissionless registry of demo properties, not a verified property registry.
 contract PropertyFactory {
-    address[] public properties;
+    error InvalidPropertyValue();
+
+    struct Property {
+        address token;
+        address creator;
+        uint256 initialPropertyValue;
+        string metadataURI;
+    }
+
+    Property[] public properties;
+
     mapping(address token => bool registered) public isProperty;
+    /// @notice Check isProperty(token) first: zero is also the first valid property ID.
+    mapping(address token => uint256 propertyId) public propertyIdByToken;
 
     event PropertyCreated(
         uint256 indexed propertyId,
         address indexed token,
-        address indexed initialOwner,
+        address indexed creator,
         uint256 shareCount,
-        uint256 propertyValue,
+        uint256 initialPropertyValue,
         string metadataURI
     );
 
@@ -21,14 +33,27 @@ contract PropertyFactory {
         string calldata name,
         string calldata symbol,
         uint256 shareCount,
-        uint256 propertyValue,
+        uint256 initialPropertyValue,
         string calldata metadataURI
     ) external returns (address token) {
-        token = address(new PropertyToken(name, symbol, msg.sender, shareCount, propertyValue, metadataURI));
+        if (initialPropertyValue == 0) {
+            revert InvalidPropertyValue();
+        }
+
         uint256 propertyId = properties.length;
-        properties.push(token);
+
+        token = address(new PropertyToken(name, symbol, msg.sender, address(this), propertyId, shareCount));
+
+        properties.push(
+            Property({
+                token: token, creator: msg.sender, initialPropertyValue: initialPropertyValue, metadataURI: metadataURI
+            })
+        );
+
         isProperty[token] = true;
-        emit PropertyCreated(propertyId, token, msg.sender, shareCount, propertyValue, metadataURI);
+        propertyIdByToken[token] = propertyId;
+
+        emit PropertyCreated(propertyId, token, msg.sender, shareCount, initialPropertyValue, metadataURI);
     }
 
     function propertyCount() external view returns (uint256) {

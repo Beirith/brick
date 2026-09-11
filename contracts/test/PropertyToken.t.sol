@@ -9,19 +9,19 @@ contract PropertyTokenTest is Test {
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
     PropertyToken token;
+    address factory = makeAddr("factory");
 
     function setUp() public {
-        token = new PropertyToken("Floripa Apartment", "FLP", alice, 100, 500_000e6, "ipfs://property");
+        token = new PropertyToken("Floripa Apartment", "FLP", alice, factory, 7, 100);
     }
 
-    function testInitialSharesAndPrice() public view {
+    function testInitialSharesAndRegistryReferences() public view {
         assertEq(token.balanceOf(alice), 100);
         assertEq(token.totalSupply(), 100);
         assertEq(token.decimals(), 0);
         assertEq(token.initialOwner(), alice);
-        assertEq(token.propertyValue(), 500_000e6);
-        assertEq(token.initialTokenPrice(), 5_000e6);
-        assertEq(token.metadataURI(), "ipfs://property");
+        assertEq(token.factory(), factory);
+        assertEq(token.propertyId(), 7);
     }
 
     function testTransferPreservesSupplyAndOriginalOwner() public {
@@ -41,27 +41,21 @@ contract PropertyTokenTest is Test {
 
     function testRejectInvalidParameters() public {
         vm.expectRevert(PropertyToken.InvalidOwner.selector);
-        new PropertyToken("A", "A", address(0), 100, 500_000e6, "");
+        new PropertyToken("A", "A", address(0), factory, 0, 100);
+        vm.expectRevert(PropertyToken.InvalidFactory.selector);
+        new PropertyToken("A", "A", alice, address(0), 0, 100);
         vm.expectRevert(PropertyToken.InvalidShareCount.selector);
-        new PropertyToken("A", "A", alice, 0, 500_000e6, "");
-        vm.expectRevert(PropertyToken.InvalidPropertyValue.selector);
-        new PropertyToken("A", "A", alice, 100, 0, "");
-        vm.expectRevert(PropertyToken.InvalidPropertyValue.selector);
-        new PropertyToken("A", "A", alice, 100, 99, "");
+        new PropertyToken("A", "A", alice, factory, 0, 0);
         vm.expectRevert(PropertyToken.InvalidTokenMetadata.selector);
-        new PropertyToken("", "A", alice, 100, 500_000e6, "");
+        new PropertyToken("", "A", alice, factory, 0, 100);
         vm.expectRevert(PropertyToken.InvalidTokenMetadata.selector);
-        new PropertyToken("A", "", alice, 100, 500_000e6, "");
+        new PropertyToken("A", "", alice, factory, 0, 100);
     }
 
-    function testFuzzVariableSupplyAndPrice(uint256 shares, uint256 value) public {
-        shares = bound(shares, 1, 1e12);
-        value = bound(value, shares, type(uint128).max);
-        PropertyToken variableToken = new PropertyToken("A", "A", alice, shares, value, "");
+    function testFuzzVariableSupply(uint256 shares) public {
+        shares = bound(shares, 1, type(uint256).max);
+        PropertyToken variableToken = new PropertyToken("A", "A", alice, factory, 0, shares);
         assertEq(variableToken.totalSupply(), shares);
         assertEq(variableToken.balanceOf(alice), shares);
-        uint256 price = variableToken.initialTokenPrice();
-        assertLe(price * shares, value);
-        assertLt(value - price * shares, shares);
     }
 }
