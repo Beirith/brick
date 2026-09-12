@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="112 116 298 290" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Brick Logo</title>
+  <desc>Minimalist isometric brick icon in #C44B20</desc>
+
+  <!-- Top face -->
+  <path d="M128 214L278 132L394 190L244 272L128 214Z" fill="#C44B20"/>
+
+  <!-- Left face -->
+  <path d="M128 230L236 284V390L128 332V230Z" fill="#C44B20"/>
+
+  <!-- Right face -->
+  <path d="M252 284L394 207V311L252 390V284Z" fill="#C44B20"/>
+</svg>
