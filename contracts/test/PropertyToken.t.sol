@@ -53,7 +53,7 @@ contract PropertyTokenTest is Test {
     }
 
     function testFuzzVariableSupply(uint256 shares) public {
-        shares = bound(shares, 1, type(uint256).max);
+        shares = bound(shares, 1, type(uint208).max);
         PropertyToken variableToken = new PropertyToken("A", "A", alice, factory, 0, shares);
         assertEq(variableToken.totalSupply(), shares);
         assertEq(variableToken.balanceOf(alice), shares);

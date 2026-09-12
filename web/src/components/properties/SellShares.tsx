@@ -61,5 +61,5 @@ export function SellShares({ id }: { id: string }) {
       <WalletHint />{property.owned === 0n && <p className="notice">You have no available shares to sell. Listed shares can be managed in My portfolio.</p>}
       <button className="full-width" disabled={!canSign || property.owned === 0n || total === undefined}>Publish offer</button>
     </form><aside className="panel summary-panel"><span className="eyebrow">YOUR OFFER</span><h2>Total offer value</h2><p className="large-value">{total === undefined ? '—' : money(total)}</p><p className="muted">Your shares will be reserved for sale. You can cancel any unsold shares from My portfolio.</p><hr /><p className="muted">MetaMask will ask for two confirmations: authorizing your shares, then publishing your offer.</p></aside></div>
-  </> : <EmptyState title="Property not found"><Link href="/">Back to marketplace</Link></EmptyState>}</DataBoundary>;
+  </> : <EmptyState title="Property not found"><Link href="/marketplace">Back to marketplace</Link></EmptyState>}</DataBoundary>;
 }

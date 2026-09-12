@@ -2,7 +2,7 @@ import { type Address, type PublicClient, zeroAddress } from 'viem';
 import { factoryAbi, marketAbi, tokenAbi, configuredAddresses } from '@/config/contracts';
 import { locationFromMetadata } from './format';
 
-export type Property = { id: bigint; token: Address; name: string; value: bigint; supply: bigint; owned: bigint; location?: string };
+export type Property = { id: bigint; token: Address; creator: Address; name: string; value: bigint; supply: bigint; owned: bigint; location?: string };
 export type Listing = { id: bigint; seller: Address; token: Address; remaining: bigint; price: bigint };
 export type BrickData = { properties: Property[]; listings: Listing[]; balance: bigint };
 
@@ -29,13 +29,13 @@ export async function readBrick(client: PublicClient, owner?: Address): Promise<
     owner ? client.readContract({ address: currency, abi: tokenAbi, functionName: 'balanceOf', args: [owner] }) : Promise.resolve(0n),
   ]);
   const properties = await enumerate(count, async id => {
-    const [token, , value, uri] = await client.readContract({ address: factory, abi: factoryAbi, functionName: 'properties', args: [id] });
+    const [token, creator, value, uri] = await client.readContract({ address: factory, abi: factoryAbi, functionName: 'properties', args: [id] });
     const [name, supply, owned] = await Promise.all([
       client.readContract({ address: token, abi: tokenAbi, functionName: 'name' }),
       client.readContract({ address: token, abi: tokenAbi, functionName: 'totalSupply' }),
       owner ? client.readContract({ address: token, abi: tokenAbi, functionName: 'balanceOf', args: [owner] }) : Promise.resolve(0n),
     ]);
-    return { id, token, name, value, supply, owned, location: locationFromMetadata(uri) };
+    return { id, token, creator, name, value, supply, owned, location: locationFromMetadata(uri) };
   });
   const listings = await enumerate(listingCount, async id => {
     const [seller, token, remaining, price] = await client.readContract({ address: marketplace, abi: marketAbi, functionName: 'listings', args: [id] });

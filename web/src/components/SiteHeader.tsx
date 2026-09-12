@@ -12,7 +12,7 @@ export function SiteHeader() {
       <span>brick</span>
     </Link>
     <nav aria-label="Main navigation">
-      {[['/', 'Marketplace'], ['/properties/new', 'Add property'], ['/portfolio', 'My portfolio']].map(([href, label]) => <Link key={href} href={href} aria-current={path === href ? 'page' : undefined}>{label}</Link>)}
+      {[['/', 'Home'], ['/marketplace', 'Marketplace'], ['/properties/new', 'Add property'], ['/portfolio', 'My portfolio']].map(([href, label]) => <Link key={href} href={href} aria-current={path === href ? 'page' : undefined}>{label}</Link>)}
     </nav>
     <ConnectWallet />
   </div></header>;

@@ -56,7 +56,11 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       setMessage(`${friendlyError(cause)}${confirmed ? ' The previous step was confirmed, but the full action was not completed.' : ''}`);
     } finally {
       await queryClient.invalidateQueries({ queryKey: ['brick'] });
+      await queryClient.invalidateQueries({ queryKey: ['governance'] });
+      await queryClient.invalidateQueries({ queryKey: ['income'] });
       await queryClient.refetchQueries({ queryKey: ['brick'], type: 'all' });
+      await queryClient.refetchQueries({ queryKey: ['governance'], type: 'all' });
+      await queryClient.refetchQueries({ queryKey: ['income'], type: 'all' });
       setBusy(false); lock.current = false;
     }
   }

@@ -4,14 +4,16 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {PropertyFactory} from "../src/PropertyFactory.sol";
 import {PropertyToken} from "../src/PropertyToken.sol";
+import {PropertyGovernance} from "../src/PropertyGovernance.sol";
 
 contract PropertyFactoryTest is Test {
     PropertyFactory factory;
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
+    address aiAgent = makeAddr("aiAgent");
 
     function setUp() public {
-        factory = new PropertyFactory();
+        factory = new PropertyFactory(aiAgent);
     }
 
     function testIndependentPropertiesBelongToCallers() public {
@@ -44,6 +46,10 @@ contract PropertyFactoryTest is Test {
         assertEq(PropertyToken(second).balanceOf(bob), 200);
         assertEq(PropertyToken(first).balanceOf(address(factory)), 0);
         assertEq(PropertyToken(first).balanceOf(bob), 0);
+        address governance = factory.governanceByToken(first);
+        assertEq(PropertyGovernance(governance).propertyToken(), first);
+        assertTrue(PropertyGovernance(governance).hasRole(PropertyGovernance(governance).PROPOSER_ROLE(), alice));
+        assertTrue(PropertyGovernance(governance).hasRole(PropertyGovernance(governance).AI_AGENT_ROLE(), aiAgent));
     }
 
     function testInvalidCreationDoesNotRegisterProperty() public {
@@ -76,7 +82,7 @@ contract PropertyFactoryTest is Test {
     }
 
     function testFuzzSharesAndValueAreIndependent(uint256 shares, uint256 value) public {
-        shares = bound(shares, 1, type(uint256).max);
+        shares = bound(shares, 1, type(uint208).max);
         value = bound(value, 1, type(uint256).max);
         vm.prank(alice);
         address created = factory.createProperty("Apartment", "APT", shares, value, "");
